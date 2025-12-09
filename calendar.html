@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calendario</title>
+  <style>
+    body { font-family: Arial, system-ui, -apple-system; padding: 20px; }
+    table.calendar { border-collapse: collapse; width: 100%; max-width: 540px; }
+    table.calendar caption { font-size: 1.25rem; margin-bottom: 6px; font-weight: 600; text-align: left; }
+    table.calendar th, table.calendar td { border: 1px solid #ccc; padding: 8px; text-align: center; width: 14.2857%; height: 60px; vertical-align: top; }
+    table.calendar th { background:#f5f5f5; font-weight:700; }
+    td.other-month { color: #999; background:#fafafa; } /* días del mes anterior/siguiente */
+    td.today { background: #ffef9a; font-weight:700; }    /* día actual */
+    .controls { margin-bottom: 12px; }
+    .small { font-size: .9rem; color:#555; }
+  </style>
+</head>
+<body>
+
+  <div class="controls">
+    <button id="btnPrompt">Mostrar calendario (pedir año/mes)</button>
+  </div>
+
+  <div id="calendarContainer"></div>
+
+  <script>
+  (function () {
+    // Arrays de meses y días 
+    const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const weekNames = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+
+    // Variables con la fecha actual
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); 
+    const currentDay = now.getDate();
+
+    // Función para obtener el último día de un mes: usa la autocorrección de Date
+    function getLastDayOfMonth(year, monthIndex) {
+      return new Date(year, monthIndex + 1, 0).getDate();
+    }
+
+    // Convierte getDay() (0=Dom..6=Sáb) a índice con lunes=0 .. domingo=6
+    function weekdayIndexMondayFirst(jsDay) {
+      return (jsDay + 6) % 7;
+    }
+
+    // Genera el HTML de la tabla del calendario para año y mes dados (monthIndex 0-11)
+    function buildCalendar(year, monthIndex) {
+      const container = document.getElementById('calendarContainer');
+      container.innerHTML = ''; // limpiar
+
+      const table = document.createElement('table');
+      table.className = 'calendar';
+      table.setAttribute('role','table');
+
+      // caption con mes y año
+      const caption = document.createElement('caption');
+      caption.textContent = `${monthNames[monthIndex]} ${year}`;
+      table.appendChild(caption);
+
+      // fila cabecera con días de la semana 
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      weekNames.forEach(w => {
+        const th = document.createElement('th');
+        th.scope = "col";
+        th.textContent = w;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      // cuerpo con los días
+      const tbody = document.createElement('tbody');
+
+      // ¿en qué día cae el 1 del mes?
+      const firstDayJs = new Date(year, monthIndex, 1).getDay(); // 0..6 (domingo..sab)
+      const startIndex = weekdayIndexMondayFirst(firstDayJs); // 0..6 (lunes..domingo)
+      const daysInMonth = getLastDayOfMonth(year, monthIndex);
+
+      // datos del mes anterior para rellenar
+      const prevMonthLastDay = getLastDayOfMonth(year, monthIndex - 1);
+
+      let dayNumber = 1;
+      // Las celdas totales serán 6 filas x 7 columnas (suficiente para cualquier mes)
+      for (let week = 0; week < 6; week++) {
+        const tr = document.createElement('tr');
+        for (let dow = 0; dow < 7; dow++) {
+          const td = document.createElement('td');
+
+          // índice absoluto de celda (desde la primera celda del mes)
+          const cellIndex = week * 7 + dow;
+
+          if (cellIndex < startIndex) {
+            // días del mes anterior 
+            const prevDay = prevMonthLastDay - (startIndex - 1 - cellIndex);
+            td.textContent = prevDay;
+            td.className = 'other-month';
+          } else if (dayNumber > daysInMonth) {
+            // días del mes siguiente (continuación)
+            const nextDay = dayNumber - daysInMonth;
+            td.textContent = nextDay;
+            td.className = 'other-month';
+            dayNumber++;
+          } else {
+            // día del mes actual
+            td.textContent = dayNumber;
+
+            // resaltar día actual si coincide con la fecha real
+            if (year === currentYear && monthIndex === currentMonth && dayNumber === currentDay) {
+              td.classList.add('today');
+              td.setAttribute('aria-current','date');
+            }
+            dayNumber++;
+          }
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+
+        // si ya pusimos todos los días del mes y también los días siguientes, podemos romper
+        if (dayNumber > daysInMonth && week > 3) {
+          // la condición week>3 evita romper antes de 4 filas en meses raros (por estética)
+          break;
+        }
+      }
+
+      table.appendChild(tbody);
+      container.appendChild(table);
+    }
+
+    // Pide al usuario año y mes mediante prompt 
+    function askAndRender() {
+      // Pedimos año (por defecto el actual)
+      let yearStr = prompt("Introduce el año (ej: 2025):", String(currentYear));
+      if (yearStr === null) return; // usuario canceló
+      let year = parseInt(yearStr, 10);
+      if (Number.isNaN(year) || year < 1) {
+        alert("Año no válido. Se usará el año actual.");
+        year = currentYear;
+      }
+
+      // Pedimos mes en número 1-12
+      let monthStr = prompt("Introduce el mes (1-12):\n1=Enero ... 12=Diciembre", String(currentMonth + 1));
+      if (monthStr === null) return;
+      let monthNum = parseInt(monthStr, 10);
+      if (Number.isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+        alert("Mes no válido. Se usará el mes actual.");
+        monthNum = currentMonth + 1;
+      }
+
+      const monthIndex = monthNum - 1;
+      buildCalendar(year, monthIndex);
+    }
+
+    // Botón para pedir datos
+    document.getElementById('btnPrompt').addEventListener('click', askAndRender);
+
+    buildCalendar(currentYear, currentMonth);
+
+  })();
+  </script>
+</body>
+</html>
