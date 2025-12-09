@@ -1,14 +1,19 @@
 # proyecto-intermodular-daw-Miguel-Perez
+
 Proyecto Intermodular de 2ºS DAW: Gestión de reservas.
+
 Apartado 1 - Propuesta del proyecto ampliada.
+
 1.1 Título del proyecto
 Padel Verde — Sistema de reservas para la gestión de pistas, horarios y reservas de jugadores.
+
 1.2 Objetivo y utilidad
 Objetivo: Desarrollar una aplicación web para gestionar reservas de pistas en el club Padel Verde,
 permitiendo a los jugadores registrarse, ver disponibilidad, reservar y administrar sus reservas; y
 proporcionando a los administradores herramientas para gestionar pistas, usuarios y reservas.
 Utilidad: Automatizar la gestión de horarios y reservas para evitar solapamientos y facilitar la
 administración y el acceso de los jugadores a su historial y gestión de partidas.
+
 1.3 Requisitos funcionales y reglas del negocio
 Roles
 • Admin: gestionar pistas (create/read/update/delete), gestionar usuarios (activar/desactivar,
