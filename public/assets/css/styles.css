@@ -1,0 +1,25 @@
+/* Clickable calendar days */
+.calendar-day {
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Hover effect for clickable days only */
+.calendar-day:hover {
+    background-color: #e9f7ef; /* soft green */
+    box-shadow: inset 0 0 0 2px #198754;
+}
+
+/* Selected day style */
+.calendar-day.table-primary {
+    background-color: #198754 !important;
+    color: #fff;
+}
+
+/* Past days (not clickable) */
+.calendar-day.text-muted {
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+    box-shadow: none;
+}
+
